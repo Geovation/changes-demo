@@ -251,11 +251,12 @@ export default class Map extends React.Component {
                 this.renderer.setLayoutProperty(id, 'visibility', 'none')
             })
         })
+        clearTimeout(this.timeout_styleloaded)
     }
 
     whenMapStyleLoaded(func) {
         if (this.renderer.isStyleLoaded()) func()
-        else setTimeout(() => this.whenMapStyleLoaded(func), 1)
+        else this.timeout_styleloaded=setTimeout(() => this.whenMapStyleLoaded(func), 1)
     }
 
     componentDidMount() {
