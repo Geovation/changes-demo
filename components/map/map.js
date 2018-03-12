@@ -78,6 +78,7 @@ export default class Map extends React.Component {
         this.whenMapStyleLoaded(() => {
             this.toDeleteLayers.forEach((id) => {
                 this.renderer.removeLayer(id)
+                this.rendeder.removeSource(id)
             })
 
             this.toDeleteLayers = this.newLayers
