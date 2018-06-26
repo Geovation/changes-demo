@@ -14,7 +14,7 @@ export default class MainPage extends React.Component {
             topographyList: null,
             topographySelected: 0,
             playing: false,
-            bool: true,
+            bool: false,
         }
     }
 
