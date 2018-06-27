@@ -7,9 +7,12 @@ topography/%: %.geo.json
 	tippecanoe \
 		--no-feature-limit \
 		--no-tile-size-limit \
-		--no-tile-compression \
+		--no-tiny-polygon-reduction
+		--low-detail 10 \
+		--minimum-detail 10 \
 		--minimum-zoom 12 \
 		--maximum-zoom 16 \
+		--no-tile-compression \
 		--layer $(basename $@) \
 		--output-to-directory $@ \
 		$<

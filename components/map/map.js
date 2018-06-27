@@ -24,7 +24,8 @@ export default class Map extends React.Component {
                 id: 'background',
                 type: 'background',
                 paint: {
-                    'background-color': '#444',
+                    'background-color': '#fffeca',
+                    'background-opacity':.6,
                 }
             },
             {
@@ -228,15 +229,11 @@ export default class Map extends React.Component {
                 'source-layer': topography,
                 'filter': [
                     'has',
-                    'abshmax'
+                    'height'
                 ],
                 'paint': {
                     'fill-extrusion-color': '#fecb9a',
-                    'fill-extrusion-height': [
-                        '-',
-                        ['get', 'abshmax'],
-                        ['get', 'abshmin']
-                    ],
+                    'fill-extrusion-height': ['get', 'height'],
                 }
             }
         ]
