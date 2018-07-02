@@ -7,7 +7,8 @@ topography/%: %.geo.json
 	tippecanoe \
 		--no-feature-limit \
 		--no-tile-size-limit \
-		--no-tiny-polygon-reduction
+		--feature-filter '{ "*": [ "any", [ ">=", "$zoom", 14 ],["!=","make","Multiple"] ] }' \
+		--no-tiny-polygon-reduction \
 		--low-detail 10 \
 		--minimum-detail 10 \
 		--minimum-zoom 12 \

@@ -25,7 +25,6 @@ export default class Map extends React.Component {
                 type: 'background',
                 paint: {
                     'background-color': '#fffeca',
-                    'background-opacity':.6,
                 }
             },
             {
