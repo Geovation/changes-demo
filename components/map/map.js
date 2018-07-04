@@ -13,7 +13,6 @@ export default class Map extends React.Component {
         this.display = this.display.bind(this)
         this.pushSelected = this.pushSelected.bind(this)
         this.style = this.style.bind(this)
-        this.whenMapStyleLoaded = this.whenMapStyleLoaded.bind(this)
         this.newLayers = []
         this.toDeleteLayers = []
     }
@@ -36,7 +35,10 @@ export default class Map extends React.Component {
             {
                 id: 'hillshading',
                 type: 'hillshade',
-                source: 'terrain'
+                source: 'terrain',
+                paint: {
+                    'hillshade-exaggeration':0.1,
+                }
             }
         ]
         this.renderer = new MapboxGL.Map({
@@ -47,7 +49,6 @@ export default class Map extends React.Component {
             minZoom: 12,
             maxZoom: 16
         })
-        document.querySelector('.mapboxgl-missing-css').remove() // hack
         this.renderer.on('load', () => {
             this.pushSelected()
             this.setState({ loaded: true })
@@ -56,6 +57,19 @@ export default class Map extends React.Component {
         this.renderer.on("render", (e) => {
             this.lastRendered = Date.now()
         })
+
+        this.renderer.on('sourcedata', (e) => {
+            if(e.isSourceLoaded ){
+              this.toDeleteLayers.forEach((id) => {
+                  this.renderer.removeLayer(id)
+                  this.rendeder.removeSource(id)
+              })
+
+              this.toDeleteLayers = this.newLayers
+              this.newLayers = []
+            }
+        })
+
 
     }
 
@@ -74,17 +88,6 @@ export default class Map extends React.Component {
           this.renderer.addLayer(layer)
           this.renderer.moveLayer('hillshading')
         })
-
-        this.whenMapStyleLoaded(() => {
-            this.toDeleteLayers.forEach((id) => {
-                this.renderer.removeLayer(id)
-                this.rendeder.removeSource(id)
-            })
-
-            this.toDeleteLayers = this.newLayers
-            this.newLayers = []
-        })
-
     }
 
     style(topography) {
@@ -256,21 +259,6 @@ export default class Map extends React.Component {
                 }
             }
         ]
-    }
-
-    whenMapStyleLoaded(func) {
-        if (this.timeoutMapLoaded) {
-            clearTimeout(this.timeoutMapLoaded)
-        }
-
-        const now = Date.now()
-        // workaround hack from https://github.com/Eddie-Larsson/mapbox-print-pdf/issues/1
-        if (this.lastRendered && this.renderer.isStyleLoaded() && now > this.lastRendered + 800 ) {
-            func()
-        }
-        else {
-            this.timeoutMapLoaded = setTimeout(() => this.whenMapStyleLoaded(func), 10)
-        }
     }
 
     componentDidMount() {
