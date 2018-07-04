@@ -91,29 +91,33 @@ export default class MainPage extends React.Component {
     }
 
     loop = () =>{
-        if (!this.state.playing) return
-        if (this.state.topographySelected === this.state.topographyList.length -2 ){  //stop video in the last frame
-          this.setState({ playing:false })                                            //to improve performance
+        if(this.timeout){
+          clearTimeout(this.timeout)
         }
-        const next = this.state.topographySelected < this.state.topographyList.length - 1 ? this.state.topographySelected + 1 : 0
-        this.setState({ topographySelected: next })
-        setTimeout(this.loop, 2 * 1000) // in milliseconds
+        this.timeout = setTimeout(()=> {
+          if (!this.state.playing) return
+          if (this.state.topographySelected === this.state.topographyList.length -2 ){  //stop video in the last frame
+            this.setState({ playing:false })                                            //to improve performance
+          }
+          const next = this.state.topographySelected < this.state.topographyList.length - 1 ? this.state.topographySelected + 1 : 0
+          this.setState({ topographySelected: next })
+          this.timeout = setTimeout(this.loop, 0);
+        }, 2 * 1000);
     }
 
     tabsHandle = () =>{
         const handleVisibilityChange =()=>{
             if (document.hidden) {
-              if (this.state.playing===true){
-                this.setState({bool:true,playing:false})
-              }
+                if (this.state.playing===true){
+                    this.setState({bool:true,playing:false})
+                }
             }
             else {
-              if (this.state.bool===true){
-                this.setState({ playing:true })
-              }
-              this.setState({bool:false})
+                if (this.state.bool===true){
+                    this.setState({ playing:true })
+                }
+                this.setState({bool:false})
             }
-
         }
         document.addEventListener("visibilitychange", handleVisibilityChange, false);
     }
