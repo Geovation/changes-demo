@@ -13,15 +13,14 @@ export default class MainPage extends React.Component {
             zoom: null,
             topographyList: null,
             topographySelected: 0,
-            playing: false
+            playing: false,
+            bool: false,
         }
-        this.setup = this.setup.bind(this)
-        this.togglePlay = this.togglePlay.bind(this)
-        this.setSelected = this.setSelected.bind(this)
-        this.loop = this.loop.bind(this)
     }
 
-    setup() {
+    setup = () =>{
+        this.tabsHandle()
+
         const centre = [-1.8231, 51.5989]
         const zoom = 14.44
         const topographyList = [
@@ -82,20 +81,45 @@ export default class MainPage extends React.Component {
         this.togglePlay()
     }
 
-    togglePlay(state) {
+    togglePlay = (state) =>{
         const playing = state !== undefined ? state : !this.state.playing
         this.setState({ playing })
     }
 
-    setSelected(i) {
+    setSelected = (i) =>{
         this.setState({ topographySelected: i })
     }
 
-    loop() {
-        if (!this.state.playing) return
-        const next = this.state.topographySelected < this.state.topographyList.length - 1 ? this.state.topographySelected + 1 : 0
-        this.setState({ topographySelected: next })
-        setTimeout(this.loop, 2 * 1000) // in milliseconds
+    loop = () =>{
+        if(this.timeout){
+          clearTimeout(this.timeout)
+        }
+        this.timeout = setTimeout(()=> {
+          if (!this.state.playing) return
+          if (this.state.topographySelected === this.state.topographyList.length -2 ){  //stop video in the last frame
+            this.setState({ playing:false })                                            //to improve performance
+          }
+          const next = this.state.topographySelected < this.state.topographyList.length - 1 ? this.state.topographySelected + 1 : 0
+          this.setState({ topographySelected: next })
+          this.timeout = setTimeout(this.loop, 0);
+        }, 2 * 1000);
+    }
+
+    tabsHandle = () =>{
+        const handleVisibilityChange =()=>{
+            if (document.hidden) {
+                if (this.state.playing===true){
+                    this.setState({bool:true,playing:false})
+                }
+            }
+            else {
+                if (this.state.bool===true){
+                    this.setState({ playing:true })
+                }
+                this.setState({bool:false})
+            }
+        }
+        document.addEventListener("visibilitychange", handleVisibilityChange, false);
     }
 
     componentDidMount() {

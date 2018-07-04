@@ -10,15 +10,9 @@ export default class Map extends React.Component {
         this.state = {
             loaded: false
         }
-        this.display = this.display.bind(this)
-        this.pushSelected = this.pushSelected.bind(this)
-        this.style = this.style.bind(this)
-        this.whenMapStyleLoaded = this.whenMapStyleLoaded.bind(this)
-        this.newLayers = []
-        this.toDeleteLayers = []
     }
 
-    display() {
+    display = () => {
         const sources = {
             'terrain': {
                 type: 'raster-dem',
@@ -30,13 +24,16 @@ export default class Map extends React.Component {
                 id: 'background',
                 type: 'background',
                 paint: {
-                    'background-color': '#444'
+                    'background-color': '#fffeca',
                 }
             },
             {
                 id: 'hillshading',
                 type: 'hillshade',
-                source: 'terrain'
+                source: 'terrain',
+                paint: {
+                    'hillshade-exaggeration':0.1
+                }
             }
         ]
         this.renderer = new MapboxGL.Map({
@@ -47,194 +44,112 @@ export default class Map extends React.Component {
             minZoom: 12,
             maxZoom: 16
         })
-        document.querySelector('.mapboxgl-missing-css').remove() // hack
         this.renderer.on('load', () => {
-            this.pushSelected()
+            this.props.topographyList.map(this.add)
+            this.show(this.props.topographySelected)
             this.setState({ loaded: true })
+            this.renderer.moveLayer('hillshading')
         })
 
-        this.renderer.on("render", (e) => {
-            this.lastRendered = Date.now()
+        this.renderer.on('sourcedata', (e) => {
+            if(e.isSourceLoaded ){
+               if (this.previous) this.previous.forEach(id => {
+                   this.renderer.setLayoutProperty(id, 'visibility', 'none')
+               })
+            }
         })
-
     }
 
-    pushSelected() {
-        const topography = this.props.topographyList[this.props.topographySelected]
-
-        if (!this.renderer.getSource(topography.data)) {
-          this.renderer.addSource(topography.data, {
+    add = (topography) => {
+        this.renderer.addSource(topography.data, {
             type: 'vector',
             tiles: [window.location.href + topography.data + '/{z}/{x}/{y}.pbf']
-          })
-        }
-
+        })
         this.style(topography.data).forEach(layer => {
-          this.newLayers.push(layer.id)
-          this.renderer.addLayer(layer)
-          this.renderer.moveLayer('hillshading')
+            this.renderer.addLayer(layer)
+            this.renderer.setLayoutProperty(layer.id, 'visibility', 'none')
+            this.renderer.moveLayer('hillshading')
         })
-
-        this.whenMapStyleLoaded(() => {
-            this.toDeleteLayers.forEach((id) => {
-                this.renderer.removeLayer(id)
-                this.rendeder.removeSource(id)
-            })
-
-            this.toDeleteLayers = this.newLayers
-            this.newLayers = []
-        })
-
     }
 
-    style(topography) {
+    style = (topography) => {
         return [
             {
-                'id': topography + '-fields',
+                'id': topography + 'generic',
                 'type': 'fill',
                 'source': topography,
                 'source-layer': topography,
-                'filter': [
-                    'in',
-                    'descriptivegroup1',
-                    'General Surface',
-                    'Landform',
-                    'Roadside'
-                ],
                 'paint': {
-                    'fill-color': '#c7fda0',
-                    'fill-outline-color': '#87b36a'
-                }
+                  'fill-color': [
+                      'match',
+                      ['get', 'descriptivegroup1'],
+                      [
+                          'General Surface',
+                          'Landform',
+                          'Roadside'
+                      ], '#c7fda0',
+                      ['Unclassified'],'#cbcc99',
+                      ['Natural Environment'],'#c9fbca',
+                      [
+                          'Building',
+                          'Glasshouse'
+                      ],'#fecb9a',
+                      ['Structure'],'#d99669',
+                      ['Inland Water'],'#d5fffa',
+                      [
+                          'Road Or Track',
+                          'Path'
+                      ],'#cccccc',
+                      ['Rail'],'#787878',
+                      'black'
+                  ],
+                  'fill-outline-color':[
+                      'match',
+                      ['get', 'descriptivegroup1'],
+                      [
+                          'General Surface',
+                          'Landform',
+                          'Roadside'
+                      ], '#87b36a',
+                      ['Unclassified'],'#7a9068',
+                      ['Natural Environment'],'#95bd85',
+                      [
+                          'Building',
+                          'Glasshouse'
+                      ],'#dd8667',
+                      ['Structure'],'#6b6844',
+                      ['Inland Water'],'#86d2d0',
+                      [
+                          'Road Or Track',
+                          'Path'
+                      ],'#8c8c82',
+                      ['Rail'],'#222222',
+                  'black'
+                  ],
+              }
             },
             {
-                'id': topography + '-urban',
-                'type': 'fill',
-                'source': topography,
-                'source-layer': topography,
-                'filter': [
-                    '==',
-                    'descriptivegroup1',
-                    'Unclassified'
-                ],
-                'paint': {
-                    'fill-color': '#cbcc99',
-                    'fill-outline-color': '#7a9068'
-                }
-            },
-            {
-                'id': topography + '-semiurban',
-                'type': 'fill',
-                'source': topography,
-                'source-layer': topography,
-                'filter': [
-                    'all',
-                    [
-                        '==',
-                        'descriptivegroup1',
-                        'General Surface'
-                    ],
-                    [
-                        '==',
-                        'make',
-                        'Multiple'
-                    ]
-                ],
-                'paint': {
-                    'fill-color': '#fffeca',
-                    'fill-outline-color': '#9a9f77'
-                }
-            },
-            {
-                'id': topography + '-rural',
-                'type': 'fill',
-                'source': topography,
-                'source-layer': topography,
-                'filter': [
-                    '==',
-                    'descriptivegroup1',
-                    'Natural Environment'
-                ],
-                'paint': {
-                    'fill-color': '#c9fbca',
-                    'fill-outline-color': '#95bd85'
-                }
-            },
-            {
-                'id': topography + '-buildings',
-                'type': 'fill',
-                'source': topography,
-                'source-layer': topography,
-                'filter': [
-                    'in',
-                    'descriptivegroup1',
-                    'Building',
-                    'Glasshouse'
-                ],
-                'paint': {
-                    'fill-color': '#fecb9a',
-                    'fill-outline-color': '#dd8667'
-                }
-            },
-            {
-                'id': topography + '-structure',
-                'type': 'fill',
-                'source': topography,
-                'source-layer': topography,
-                'filter': [
-                    '==',
-                    'descriptivegroup1',
-                    'Structure'
-                ],
-                'paint': {
-                    'fill-color': '#d99669',
-                    'fill-outline-color': '#6b6844'
-                }
-            },
-            {
-                'id': topography + '-water',
-                'type': 'fill',
-                'source': topography,
-                'source-layer': topography,
-                'filter': [
-                    '==',
-                    'descriptivegroup1',
-                    'Inland Water'
-                ],
-                'paint': {
-                    'fill-color': '#d5fffa',
-                    'fill-outline-color': '#86d2d0'
-                }
-            },
-            {
-                'id': topography + '-road',
-                'type': 'fill',
-                'source': topography,
-                'source-layer': topography,
-                'filter': [
-                    'in',
-                    'descriptivegroup1',
-                    'Road Or Track',
-                    'Path'
-                ],
-                'paint': {
-                    'fill-color': '#cccccc',
-                    'fill-outline-color': '#8c8c82'
-                }
-            },
-            {
-                'id': topography + '-rail',
-                'type': 'fill',
-                'source': topography,
-                'source-layer': topography,
-                'filter': [
-                    '==',
-                    'descriptivegroup1',
-                    'Rail'
-                ],
-                'paint': {
-                    'fill-color': '#787878',
-                    'fill-outline-color': '#222222'
-                }
+               'id': topography + '-semiurban',
+               'type': 'fill',
+               'source': topography,
+               'source-layer': topography,
+               'filter': [
+                   'all',
+                   [
+                       '==',
+                       'descriptivegroup1',
+                       'General Surface'
+                   ],
+                   [
+                       '==',
+                       'make',
+                       'Multiple'
+                   ]
+               ],
+               'paint': {
+                   'fill-color': '#fffeca',
+                   'fill-outline-color': '#9a9f77'
+               }
             },
             {
                 'id': topography + '-3d-buildings',
@@ -243,34 +158,25 @@ export default class Map extends React.Component {
                 'source-layer': topography,
                 'filter': [
                     'has',
-                    'abshmax'
+                    'height'
                 ],
                 'paint': {
                     'fill-extrusion-color': '#fecb9a',
-                    'fill-extrusion-height': [
-                        '-',
-                        ['get', 'abshmax'],
-                        ['get', 'abshmin']
-                    ],
-                    'fill-extrusion-opacity': 0.8
+                    'fill-extrusion-height': ['get', 'height'],
                 }
             }
         ]
     }
 
-    whenMapStyleLoaded(func) {
-        if (this.timeoutMapLoaded) {
-            clearTimeout(this.timeoutMapLoaded)
-        }
-
-        const now = Date.now()
-        // workaround hack from https://github.com/Eddie-Larsson/mapbox-print-pdf/issues/1
-        if (this.lastRendered && this.renderer.isStyleLoaded() && now > this.lastRendered + 800 ) {
-            func()
-        }
-        else {
-            this.timeoutMapLoaded = setTimeout(() => this.whenMapStyleLoaded(func), 10)
-        }
+    show = (id) => {
+        const topography = this.props.topographyList[id]
+        const current = this.style(topography.data).map(layer => layer.id)
+        this.previous = Object.keys(this.renderer.style._layers).filter(layer => {
+            return !current.concat(['background', 'hillshading']).includes(layer)
+        })
+        current.forEach(id => {
+            this.renderer.setLayoutProperty(id, 'visibility', 'visible')
+        })
     }
 
     componentDidMount() {
@@ -279,9 +185,13 @@ export default class Map extends React.Component {
 
     componentDidUpdate(prevProps) {
         if (this.state.loaded && prevProps.topographySelected !== this.props.topographySelected) {
-          this.pushSelected()
+            this.show(this.props.topographySelected)
         }
     }
+
+    componentWillUnmount() {
+       this.renderer.remove();
+     }
 
     render() {
         return HTML.div({ className: 'map' })

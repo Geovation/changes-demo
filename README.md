@@ -25,3 +25,5 @@ The Makefile can also generate new sets of terrain tiles. Gdal, [Rio](https://py
     $ make terrain
 
 This will create a new `terrain` directory with the tileset in [Mapbox Terrain-RGB](https://blog.mapbox.com/global-elevation-data-6689f1d0ba65) ZXY format.
+
+For the current project use the [SU18](https://en.wikipedia.org/wiki/Ordnance_Survey_National_Grid) according to the British National Grid 
