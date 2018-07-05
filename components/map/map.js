@@ -237,7 +237,6 @@ export default class Map extends React.Component {
                         ['get', 'abshmax'],
                         ['get', 'abshmin']
                     ],
-                    'fill-extrusion-opacity': 0.8
                 }
             }
         ]
