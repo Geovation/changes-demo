@@ -49,7 +49,6 @@ export default class Map extends React.Component {
             this.props.topographyList.map(this.add)
             this.show(this.props.topographySelected)
             this.setState({ loaded: true })
-            this.renderer.moveLayer('hillshading')
         })
 
         this.renderer.on('sourcedata', (e) => {
@@ -67,8 +66,8 @@ export default class Map extends React.Component {
         })
         this.style(topography.data).forEach(layer => {
             this.renderer.addLayer(layer)
+            if(layer.id!==topography.data+'-3d-buildings') this.renderer.moveLayer(layer.id,'hillshading')
             this.renderer.setLayoutProperty(layer.id, 'visibility', 'none')
-            this.renderer.moveLayer('hillshading')
         })
     }
 
