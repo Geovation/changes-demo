@@ -10,6 +10,7 @@ export default class Map extends React.Component {
         this.state = {
             loaded: false
         }
+        this.previous = []
     }
 
     display = () => {
@@ -52,11 +53,10 @@ export default class Map extends React.Component {
         })
 
         this.renderer.on('sourcedata', (e) => {
-            if(e.isSourceLoaded ){
-               if (this.previous) this.previous.forEach(id => {
-                   this.renderer.setLayoutProperty(id, 'visibility', 'none')
-               })
-            }
+          if(e.isSourceLoaded ){
+            this.previous.forEach(id => this.renderer.setLayoutProperty(id, 'visibility', 'none'))
+            this.props.setItIsStillRendering(false)
+          }
         })
     }
 
@@ -246,6 +246,7 @@ export default class Map extends React.Component {
     show = (id) => {
         const topography = this.props.topographyList[id]
         const current = this.style(topography.data).map(layer => layer.id)
+
         this.previous = Object.keys(this.renderer.style._layers).filter(layer => {
             return !current.concat(['background', 'hillshading']).includes(layer)
         })

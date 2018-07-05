@@ -19,6 +19,9 @@ export default class MainPage extends React.Component {
         this.togglePlay = this.togglePlay.bind(this)
         this.setSelected = this.setSelected.bind(this)
         this.loop = this.loop.bind(this)
+        this.itIsStillRendering = false
+
+        this.setItIsStillRendering = itIsStillRendering => this.itIsStillRendering = itIsStillRendering
     }
 
     setup() {
@@ -94,7 +97,10 @@ export default class MainPage extends React.Component {
     loop() {
         if (!this.state.playing) return
         const next = this.state.topographySelected < this.state.topographyList.length - 1 ? this.state.topographySelected + 1 : 0
-        this.setState({ topographySelected: next })
+        if (!this.itIsStillRendering) {
+          this.itIsStillRendering = true
+          this.setState({ topographySelected: next })
+        }
         setTimeout(this.loop, 2 * 1000) // in milliseconds
     }
 
@@ -114,7 +120,8 @@ export default class MainPage extends React.Component {
                 centre: this.state.centre,
                 zoom: this.state.zoom,
                 topographyList: this.state.topographyList,
-                topographySelected: this.state.topographySelected
+                topographySelected: this.state.topographySelected,
+                setItIsStillRendering: this.setItIsStillRendering
             }),
             React.createElement(Footer, {
                 play: this.togglePlay,
