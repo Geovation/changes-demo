@@ -81,8 +81,8 @@ export default class MainPage extends React.Component {
             { data: 'topography/1548350-SU1085-5c963', title: 'September 2014' },
             { data: 'topography/1592959-SU1085-5c963', title: 'December 2014' }
         ]
-        this.setState({ centre, zoom, topographyList })
-        this.togglePlay()
+      this.setState({ centre, zoom, topographyList, topographySelected: topographyList.length -1 })
+      this.togglePlay()
     }
 
     togglePlay(state) {
