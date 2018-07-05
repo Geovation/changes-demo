@@ -10,14 +10,9 @@ export default class Map extends React.Component {
         this.state = {
             loaded: false
         }
-        this.display = this.display.bind(this)
-        this.pushSelected = this.pushSelected.bind(this)
-        this.style = this.style.bind(this)
-        this.newLayers = []
-        this.toDeleteLayers = []
     }
 
-    display() {
+    display = () => {
         const sources = {
             'terrain': {
                 type: 'raster-dem',
@@ -29,7 +24,7 @@ export default class Map extends React.Component {
                 id: 'background',
                 type: 'background',
                 paint: {
-                    'background-color': '#444'
+                    'background-color': '#444',
                 }
             },
             {
@@ -50,47 +45,34 @@ export default class Map extends React.Component {
             maxZoom: 16
         })
         this.renderer.on('load', () => {
-            this.pushSelected()
+            this.props.topographyList.map(this.add)
+            this.show(this.props.topographySelected)
             this.setState({ loaded: true })
-        })
-
-        this.renderer.on("render", (e) => {
-            this.lastRendered = Date.now()
+            this.renderer.moveLayer('hillshading')
         })
 
         this.renderer.on('sourcedata', (e) => {
             if(e.isSourceLoaded ){
-              this.toDeleteLayers.forEach((id) => {
-                  this.renderer.removeLayer(id)
-                  this.rendeder.removeSource(id)
-              })
-
-              this.toDeleteLayers = this.newLayers
-              this.newLayers = []
+               if (this.previous) this.previous.forEach(id => {
+                   this.renderer.setLayoutProperty(id, 'visibility', 'none')
+               })
             }
         })
-
-
     }
 
-    pushSelected() {
-        const topography = this.props.topographyList[this.props.topographySelected]
-
-        if (!this.renderer.getSource(topography.data)) {
-          this.renderer.addSource(topography.data, {
+    add = (topography) => {
+        this.renderer.addSource(topography.data, {
             type: 'vector',
             tiles: [window.location.href + topography.data + '/{z}/{x}/{y}.pbf']
-          })
-        }
-
+        })
         this.style(topography.data).forEach(layer => {
-          this.newLayers.push(layer.id)
-          this.renderer.addLayer(layer)
-          this.renderer.moveLayer('hillshading')
+            this.renderer.addLayer(layer)
+            this.renderer.setLayoutProperty(layer.id, 'visibility', 'none')
+            this.renderer.moveLayer('hillshading')
         })
     }
 
-    style(topography) {
+    style = (topography) => {
         return [
             {
                 'id': topography + '-fields',
@@ -261,15 +243,30 @@ export default class Map extends React.Component {
         ]
     }
 
+    show = (id) => {
+        const topography = this.props.topographyList[id]
+        const current = this.style(topography.data).map(layer => layer.id)
+        this.previous = Object.keys(this.renderer.style._layers).filter(layer => {
+            return !current.concat(['background', 'hillshading']).includes(layer)
+        })
+        current.forEach(id => {
+            this.renderer.setLayoutProperty(id, 'visibility', 'visible')
+        })
+    }
+
     componentDidMount() {
         this.display()
     }
 
     componentDidUpdate(prevProps) {
         if (this.state.loaded && prevProps.topographySelected !== this.props.topographySelected) {
-          this.pushSelected()
+            this.show(this.props.topographySelected)
         }
     }
+
+    componentWillUnmount() {
+       this.renderer.remove();
+     }
 
     render() {
         return HTML.div({ className: 'map' })
