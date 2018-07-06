@@ -66,7 +66,9 @@ export default class Map extends React.Component {
         })
         this.style(topography.data).forEach(layer => {
             this.renderer.addLayer(layer)
-            if(layer.id!==topography.data+'-3d-buildings') this.renderer.moveLayer(layer.id,'hillshading')
+            if(layer.id!==topography.data+'-3d-buildings' && layer.id!==topography.data+'-road') {
+              this.renderer.moveLayer(layer.id,'hillshading')
+            }
             this.renderer.setLayoutProperty(layer.id, 'visibility', 'none')
         })
     }
