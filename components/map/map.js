@@ -54,13 +54,6 @@ export default class Map extends React.Component {
             this.show(this.props.topographySelected)
             this.setState({ loaded: true })
         })
-
-        this.renderer.on('sourcedata', (e) => {
-          if(e.isSourceLoaded ){
-            this.previous.forEach(id => this.renderer.setLayoutProperty(id, 'visibility', 'none'))
-            this.props.setItIsStillRendering(false)
-          }
-        })
     }
 
     add = (topography) => {
@@ -250,13 +243,30 @@ export default class Map extends React.Component {
     show = (id) => {
         const topography = this.props.topographyList[id]
         const current = this.style(topography.data).map(layer => layer.id)
-
-        this.previous = Object.keys(this.renderer.style._layers).filter(layer => {
+        const previous = Object.keys(this.renderer.style._layers).filter(layer => {
             return !current.concat(['background', 'hillshading']).includes(layer)
         })
         current.forEach(id => {
             this.renderer.setLayoutProperty(id, 'visibility', 'visible')
         })
+        this.whenMapStyleLoaded(() => {
+            this.props.setItIsStillRendering(false)
+            previous.forEach(id => {
+                this.renderer.setLayoutProperty(id, 'visibility', 'none')
+            })
+        })
+    }
+
+    whenMapStyleLoaded(func) {
+        if (this.requestFrame) {
+            cancelAnimationFrame(this.requestFrame)
+        }
+        if (this.renderer.isStyleLoaded()) {
+          func()
+        }
+        else {
+            this.requestFrame = requestAnimationFrame(()=>this.whenMapStyleLoaded(func))
+        }
     }
 
     componentDidMount() {
