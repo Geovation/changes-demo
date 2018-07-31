@@ -4,6 +4,8 @@ import Header from 'components/header/header.js'
 import Footer from 'components/footer/footer.js'
 import Map from 'components/map/map.js'
 
+const LOOP_INTERVAL = 2 * 1000
+
 export default class MainPage extends React.Component {
 
     constructor() {
@@ -22,6 +24,9 @@ export default class MainPage extends React.Component {
         this.itIsStillRendering = false
 
         this.setItIsStillRendering = itIsStillRendering => this.itIsStillRendering = itIsStillRendering
+
+        // used for the setInterval
+        this.loopIntervalId
     }
 
     setup() {
@@ -81,7 +86,7 @@ export default class MainPage extends React.Component {
             { data: 'topography/1548350-SU1085-5c963', title: 'September 2014' },
             { data: 'topography/1592959-SU1085-5c963', title: 'December 2014' }
         ]
-      this.setState({ centre, zoom, topographyList, topographySelected: topographyList.length -1 })
+      this.setState({ centre, zoom, topographyList })
       this.togglePlay()
     }
 
@@ -95,13 +100,11 @@ export default class MainPage extends React.Component {
     }
 
     loop() {
-        if (!this.state.playing) return
         const next = this.state.topographySelected < this.state.topographyList.length - 1 ? this.state.topographySelected + 1 : 0
         if (!this.itIsStillRendering) {
           this.itIsStillRendering = true
           this.setState({ topographySelected: next })
         }
-        setTimeout(this.loop, 2 * 1000) // in milliseconds
     }
 
     componentDidMount() {
@@ -109,7 +112,10 @@ export default class MainPage extends React.Component {
     }
 
     componentDidUpdate(_, prevState) {
-        if (prevState.playing !== this.state.playing) this.loop()
+      clearInterval(this.loopIntervalId)
+      if (this.state.playing) {
+        this.loopIntervalId = setInterval(this.loop, LOOP_INTERVAL)
+      }
     }
 
     render() {
