@@ -8,6 +8,9 @@ topography/%: %.geo.json
 		--no-feature-limit \
 		--no-tile-size-limit \
 		--no-tile-compression \
+		--no-tiny-polygon-reduction \
+		--low-detail 11 \
+		--minimum-detail 11 \
 		--minimum-zoom 12 \
 		--maximum-zoom 16 \
 		--layer $(basename $@) \
@@ -17,7 +20,7 @@ topography/%: %.geo.json
 %.geo.json: %.sqlite
 	ogr2ogr \
 		-f geojson \
-		-select fid,versionDate,theme1,make,descriptiveGroup1,physicalLevel,abshmax,abshmin \
+		-select make,descriptiveGroup1,height \
 		$@ \
 		$<
 
@@ -39,16 +42,10 @@ topography/%: %.geo.json
 		$@ \
 		$(heights)
 	ogrinfo \
-		-sql 'ALTER TABLE geo ADD COLUMN abshmin DECIMAL' \
+		-sql 'ALTER TABLE geo ADD COLUMN height DECIMAL' \
 		$@
 	ogrinfo \
-		-sql 'UPDATE geo SET abshmin = (SELECT CAST(heights.abshmin AS DECIMAL) FROM heights WHERE heights.toid = geo.fid)' \
-		$@
-	ogrinfo \
-		-sql 'ALTER TABLE geo ADD COLUMN abshmax DECIMAL' \
-		$@
-	ogrinfo \
-		-sql 'UPDATE geo SET abshmax = (SELECT CAST(heights.abshmax AS DECIMAL) FROM heights WHERE heights.toid = geo.fid)' \
+		-sql 'UPDATE geo SET height = (SELECT (CAST(heights.abshmax AS DECIMAL) - CAST(heights.abshmin AS DECIMAL)) FROM heights WHERE heights.toid = geo.fid)' \
 		$@
 
 %.gml: sources/%.gz
