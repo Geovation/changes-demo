@@ -14,15 +14,13 @@ export default class Map extends React.Component {
     }
 
     display = () => {
-        // source format: https://github.com/mapbox/tilejson-spec/tree/master/2.2.0
-        // TODO: define bound to avoid getting errors in for tiles not found.
         const sources = {
             'terrain': {
                 type: 'raster-dem',
                 tiles: [window.location.href + 'terrain/{z}/{x}/{y}.png'],
                 minzoom: 12,
                 maxzoom: 16,
-                bounds: [ -1.8621825, 51.5634123,-1.7797851, 51.6111947 ]
+                bounds: [ -1.8621825, 51.5635,-1.7798, 51.61119 ]
             }
         }
         const layers = [

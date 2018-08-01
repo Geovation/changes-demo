@@ -1,3 +1,6 @@
+# TODO from the terrain tiles generated, automatically define the bounding box (bounds according to https://github.com/mapbox/tilejson-spec/tree/master/2.2.0)
+# for mapbox to avoid the errors
+
 heights = sources/su18nw_bldgHts.csv
 
 topography: $(addprefix topography/, $(notdir $(basename $(wildcard sources/*.gz))))
