@@ -21,7 +21,8 @@ export default class Map extends React.Component {
                 type: 'raster-dem',
                 tiles: [window.location.href + 'terrain/{z}/{x}/{y}.png'],
                 minzoom: 12,
-                maxzoom: 16
+                maxzoom: 16,
+                bounds: [ -1.8621825, 51.5634123,-1.7797851, 51.6111947 ]
             }
         }
         const layers = [
