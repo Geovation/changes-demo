@@ -73,151 +73,81 @@ export default class Map extends React.Component {
     style = (topography) => {
         return [
             {
-                'id': topography + '-fields',
+                'id': topography + 'generic',
                 'type': 'fill',
                 'source': topography,
                 'source-layer': topography,
-                'filter': [
-                    'in',
-                    'descriptivegroup1',
-                    'General Surface',
-                    'Landform',
-                    'Roadside'
-                ],
                 'paint': {
-                    'fill-color': '#c7fda0',
-                    'fill-outline-color': '#87b36a'
-                }
+                  'fill-color': [
+                      'match',
+                      ['get', 'descriptivegroup1'],
+                      [
+                          'General Surface',
+                          'Landform',
+                          'Roadside'
+                      ], '#c7fda0',
+                      ['Unclassified'],'#cbcc99',
+                      ['Natural Environment'],'#c9fbca',
+                      [
+                          'Building',
+                          'Glasshouse'
+                      ],'#fecb9a',
+                      ['Structure'],'#d99669',
+                      ['Inland Water'],'#d5fffa',
+                      [
+                          'Road Or Track',
+                          'Path'
+                      ],'#cccccc',
+                      ['Rail'],'#787878',
+                      'black'
+                  ],
+                  'fill-outline-color':[
+                      'match',
+                      ['get', 'descriptivegroup1'],
+                      [
+                          'General Surface',
+                          'Landform',
+                          'Roadside'
+                      ], '#87b36a',
+                      ['Unclassified'],'#7a9068',
+                      ['Natural Environment'],'#95bd85',
+                      [
+                          'Building',
+                          'Glasshouse'
+                      ],'#dd8667',
+                      ['Structure'],'#6b6844',
+                      ['Inland Water'],'#86d2d0',
+                      [
+                          'Road Or Track',
+                          'Path'
+                      ],'#8c8c82',
+                      ['Rail'],'#222222',
+                  '#444'
+                  ],
+              }
             },
             {
-                'id': topography + '-urban',
-                'type': 'fill',
-                'source': topography,
-                'source-layer': topography,
-                'filter': [
-                    '==',
-                    'descriptivegroup1',
-                    'Unclassified'
-                ],
-                'paint': {
-                    'fill-color': '#cbcc99',
-                    'fill-outline-color': '#7a9068'
-                }
-            },
-            {
-                'id': topography + '-semiurban',
-                'type': 'fill',
-                'source': topography,
-                'source-layer': topography,
-                'filter': [
-                    'all',
-                    [
-                        '==',
-                        'descriptivegroup1',
-                        'General Surface'
-                    ],
-                    [
-                        '==',
-                        'make',
-                        'Multiple'
-                    ]
-                ],
-                'paint': {
-                    'fill-color': '#fffeca',
-                    'fill-outline-color': '#9a9f77'
-                }
-            },
-            {
-                'id': topography + '-rural',
-                'type': 'fill',
-                'source': topography,
-                'source-layer': topography,
-                'filter': [
-                    '==',
-                    'descriptivegroup1',
-                    'Natural Environment'
-                ],
-                'paint': {
-                    'fill-color': '#c9fbca',
-                    'fill-outline-color': '#95bd85'
-                }
-            },
-            {
-                'id': topography + '-buildings',
-                'type': 'fill',
-                'source': topography,
-                'source-layer': topography,
-                'filter': [
-                    'in',
-                    'descriptivegroup1',
-                    'Building',
-                    'Glasshouse'
-                ],
-                'paint': {
-                    'fill-color': '#fecb9a',
-                    'fill-outline-color': '#dd8667'
-                }
-            },
-            {
-                'id': topography + '-structure',
-                'type': 'fill',
-                'source': topography,
-                'source-layer': topography,
-                'filter': [
-                    '==',
-                    'descriptivegroup1',
-                    'Structure'
-                ],
-                'paint': {
-                    'fill-color': '#d99669',
-                    'fill-outline-color': '#6b6844'
-                }
-            },
-            {
-                'id': topography + '-water',
-                'type': 'fill',
-                'source': topography,
-                'source-layer': topography,
-                'filter': [
-                    '==',
-                    'descriptivegroup1',
-                    'Inland Water'
-                ],
-                'paint': {
-                    'fill-color': '#d5fffa',
-                    'fill-outline-color': '#86d2d0'
-                }
-            },
-            {
-                'id': topography + '-road',
-                'type': 'fill',
-                'source': topography,
-                'source-layer': topography,
-                'filter': [
-                    'in',
-                    'descriptivegroup1',
-                    'Road Or Track',
-                    'Path'
-                ],
-                'paint': {
-                    'fill-color': '#cccccc',
-                    'fill-outline-color': '#8c8c82'
-                }
-            },
-            {
-                'id': topography + '-rail',
-                'type': 'fill',
-                'source': topography,
-                'source-layer': topography,
-                'filter': [
-                    '==',
-                    'descriptivegroup1',
-                    'Rail'
-                ],
-                'paint': {
-                    'fill-color': '#787878',
-                    'fill-outline-color': '#222222'
-                }
+               'id': topography + '-semiurban',
+               'type': 'fill',
+               'source': topography,
+               'source-layer': topography,
+               'filter': [
+                   'all',
+                   [
+                       '==',
+                       'descriptivegroup1',
+                       'General Surface'
+                   ],
+                   [
+                       '==',
+                       'make',
+                       'Multiple'
+                   ]
+               ],
+               'paint': {
+                   'fill-color': '#fffeca',
+                   'fill-outline-color': '#9a9f77'
+               }
             },
             {
                 'id': topography + '-3d-buildings',
